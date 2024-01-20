@@ -1,0 +1,25 @@
+project_name: 'opmd-binary-classification'
+
+# dataset details
+train_dir: '/ssd_scratch/cvit/chocolite/OPMD-Classification/train/'
+val_dir: '/ssd_scratch/cvit/chocolite/OPMD-Classification/val/'
+test_dir: '/ssd_scratch/cvit/chocolite/OPMD-Classification/test/'
+
+seed: 42
+
+# training details
+init_lr: 
+n_epochs:
+batch_size:
+num_workers:
+
+data_aug: 
+
+# saving checkpoints
+save_dir: '/ssd_scratch/cvit/chocolite/OPMD-Classification/weights/'
+save_freq: 1
+
+# model details
+name: 'densenet201'
+n_channels: 3
+n_classes: 1

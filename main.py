@@ -50,12 +50,12 @@ def main(run_name):
     model = nn.DataParallel(model)
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=config['lr'])
+    optimizer = optim.Adam(model.parameters(), lr=config['init_lr'])
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=3, verbose=True)
 
     save_dir = os.path.join(config['save_dir'], run_name)
 
-    train(model, train_dataloader, val_dataloader, test_loader, criterion, optimizer, scheduler, device, save_dir, n_epochs=config['epochs'], save_freq=1, n_gpus=4)
+    train(model, train_dataloader, val_dataloader, test_dataloader, criterion, optimizer, scheduler, device, save_dir, n_epochs=config['epochs'], save_freq=1, n_gpus=4)
 
 
 
