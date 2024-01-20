@@ -42,3 +42,75 @@ def train(model, train_dataloader, val_dataloader, test_dataloader, criterion, o
     test(model, test_dataloader, criterion, device)
 
 
+def train_epoch(model, dataloader, criterion, optimizer, scheduler, device):
+    
+    model.train()
+
+    epoch_loss = 0
+    epoch_acc = []
+
+    for batch in tqdm(dataloader, total=len(dataloader)):
+        images = batch['image'].to(device)
+        labels = batch['label'].to(device)
+
+        optimizer.zero_grad()
+
+        outputs = model(images)
+        outputs = outputs.squeeze()
+        loss = criterion(outputs, labels)
+
+        loss.backward()
+        optimizer.step()
+
+        epoch_loss += loss.item()
+
+        outputs = Activations(sigmoid=True)(outputs)
+        outputs = AsDiscrete(threshold_values=True)(outputs)
+        outputs = outputs.squeeze()
+        acc = (outputs == labels).float().tolist()
+
+        epoch_acc.append(acc.item())
+
+    epoch_loss /= len(dataloader)
+
+    epoch_acc = sum(epoch_acc.dataset)
+    epoch_acc /= len(dataloader)
+
+    scheduler.step(epoch_loss)
+
+    return epoch_loss, epoch_acc
+
+
+def eval_epoch(model, dataloader, criterion, device):
+    
+    model.eval()
+
+    epoch_loss = 0
+    epoch_acc = []
+
+    with torch.no_grad():
+        for batch in tqdm(dataloader, total=len(dataloader)):
+            images = batch['image'].to(device)
+            labels = batch['label'].to(device)
+
+            outputs = model(images)
+            outputs = outputs.squeeze()
+            loss = criterion(outputs, labels)
+
+            epoch_loss += loss.item()
+
+            outputs = Activations(sigmoid=True)(outputs)
+            outputs = AsDiscrete(threshold_values=True)(outputs)
+            outputs = outputs.squeeze()
+
+            acc = (outputs == labels).float().tolist()
+
+            epoch_acc.append(acc.item())
+
+
+    epoch_loss /= len(dataloader)
+
+    epoch_acc = sum(epoch_acc)
+    epoch_acc /= len(dataloader.dataset)
+
+    return epoch_loss, epoch_acc
