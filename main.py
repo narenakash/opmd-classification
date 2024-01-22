@@ -8,6 +8,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 
 import albumentations as A
+from albumentations.pytorch import ToTensorV2
 
 from models.densenet import DenseNet201
 from dataset import OPMDClassificationDataset
@@ -28,15 +29,27 @@ def main(run_name):
     if config['data_aug'] == 1:
         print('Data augmentation is enabled')
         train_transforms = A.Compose([
+            A.Resize(config['resize'], config['resize']),
             A.HorizontalFlip(p=0.5),
             A.RandomBrightnessContrast(p=0.2),
+            ToTensorV2(),
         ])
     else:
         print('Data augmentation is disabled')
-        train_transforms = None
+        train_transforms = A.Compose([
+            A.Resize(config['resize'], config['resize']),
+            A.Normalize(),
+            ToTensorV2(),
+        ])
         
-    val_transforms = None
-    test_transforms = None
+    val_transforms = A.Compose([
+            A.Resize(config['resize'], config['resize']),
+            ToTensorV2(),
+        ])
+    test_transforms = A.Compose([
+            A.Resize(config['resize'], config['resize']),
+            ToTensorV2(),
+        ])
 
     train_dataset = OPMDClassificationDataset(config['train_dir'], transform=train_transforms)
     val_dataset = OPMDClassificationDataset(config['val_dir'], transform=val_transforms)
@@ -51,11 +64,13 @@ def main(run_name):
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=config['init_lr'])
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=3, verbose=True)
+    scheduler = None
+    # scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=3, verbose=True)
+
 
     save_dir = os.path.join(config['save_dir'], run_name)
 
-    train(model, train_dataloader, val_dataloader, test_dataloader, criterion, optimizer, scheduler, device, save_dir, n_epochs=config['epochs'], save_freq=1, n_gpus=4)
+    train(model, train_dataloader, val_dataloader, test_dataloader, criterion, optimizer, scheduler, device, save_dir, n_epochs=config['n_epochs'], save_freq=1, n_gpus=4)
 
 
 

@@ -10,7 +10,7 @@ from test import test
 from utils import save_checkpoint, load_checkpoint
 
 
-def train(model, train_dataloader, val_dataloader, test_dataloader, criterion, optimizer, scheduler, device, save_dir, n_epochs=config['epochs'], save_freq=1, n_gpus=4):
+def train(model, train_dataloader, val_dataloader, test_dataloader, criterion, optimizer, scheduler, device, save_dir, n_epochs=10, save_freq=1, n_gpus=4):
 
     best_val_acc = -1
     best_val_acc_epoch = -1
@@ -69,14 +69,14 @@ def train_epoch(model, dataloader, criterion, optimizer, scheduler, device):
         outputs = outputs.squeeze()
         acc = (outputs == labels).float().tolist()
 
-        epoch_acc.append(acc.item())
+        epoch_acc.extend(acc)
 
     epoch_loss /= len(dataloader)
 
-    epoch_acc = sum(epoch_acc.dataset)
-    epoch_acc /= len(dataloader)
+    epoch_acc = sum(epoch_acc)
+    epoch_acc /= len(dataloader.dataset)
 
-    scheduler.step(epoch_loss)
+    # scheduler.step(epoch_loss)
 
     return epoch_loss, epoch_acc
 
@@ -105,7 +105,7 @@ def eval_epoch(model, dataloader, criterion, device):
 
             acc = (outputs == labels).float().tolist()
 
-            epoch_acc.append(acc.item())
+            epoch_acc.extend(acc)
 
 
     epoch_loss /= len(dataloader)

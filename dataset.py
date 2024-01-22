@@ -31,10 +31,16 @@ class OPMDClassificationDataset(Dataset):
 
     def __getitem__(self, idx):
         img_path, label = self.imgs[idx]
+
         img = Image.open(img_path).convert('RGB')
+        img = np.asarray(img, dtype=np.float32)
+
+        label = np.asarray(label, dtype=np.float32)
+
         if self.transform is not None:
-            img = self.transform(img)
-        return img, label
+            img = self.transform(image=img)["image"]
+
+        return {"image": img, "label": label} 
     
 
 # unit-test the dataset

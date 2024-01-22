@@ -10,8 +10,8 @@ seed: 42
 # training details
 init_lr: 0.0001
 n_epochs: 50
-batch_size: 16
-num_workers: 20
+batch_size: 32
+num_workers: 24
 
 data_aug: 0
 
