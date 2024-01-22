@@ -8,18 +8,24 @@ test_dir: '/ssd_scratch/cvit/chocolite/OPMD-Classification/test/'
 seed: 42
 
 # training details
-init_lr: 
-n_epochs:
-batch_size:
-num_workers:
+init_lr: 0.0001
+n_epochs: 50
+batch_size: 16
+num_workers: 20
 
-data_aug: 
+data_aug: 0
 
 # saving checkpoints
 save_dir: '/ssd_scratch/cvit/chocolite/OPMD-Classification/weights/'
 save_freq: 1
 
+fold: 'x'
+num_classes: 1
+
+resize: 224
+
 # model details
-name: 'densenet201'
-n_channels: 3
-n_classes: 1
+model: 
+  name: 'densenet201'
+  n_channels: 3
+
