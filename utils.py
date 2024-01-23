@@ -2,6 +2,8 @@ import torch
 import numpy as np
 from omegaconf import OmegaConf
 
+from sklearn.metrics import confusion_matrix, precision_score, recall_score, f1_score, accuracy_score
+
 
 def get_config(config_path):
     base_conf = OmegaConf.load(config_path)
@@ -34,3 +36,16 @@ def load_checkpoint(model, optimizer, load_path, device):
     optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
     epoch = checkpoint["epoch"]
     return model, optimizer, epoch
+
+
+def calculate_metrics(y_true, y_pred):
+
+    tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
+    precision = precision_score(y_true, y_pred)
+    recall = recall_score(y_true, y_pred)
+    sensitivity = tp / (tp + fn)
+    specificity = tn / (tn + fp)
+    f1 = f1_score(y_true, y_pred)
+    accuracy = accuracy_score(y_true, y_pred)
+
+    return precision, recall, sensitivity, specificity, f1, accuracy

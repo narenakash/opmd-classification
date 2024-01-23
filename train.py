@@ -7,7 +7,7 @@ from tqdm import tqdm
 from monai.transforms import Activations, AsDiscrete
 
 from test import test
-from utils import save_checkpoint, load_checkpoint
+from utils import save_checkpoint, load_checkpoint, calculate_metrics
 
 
 def train(model, train_dataloader, val_dataloader, test_dataloader, criterion, optimizer, scheduler, device, save_dir, n_epochs=10, save_freq=1, n_gpus=4):

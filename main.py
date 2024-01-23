@@ -30,7 +30,10 @@ def main(run_name):
         print('Data augmentation is enabled')
         train_transforms = A.Compose([
             A.Resize(config['resize'], config['resize']),
+            A.CenterCrop(config['crop'], config['crop']),
             A.HorizontalFlip(p=0.5),
+            A.VerticalFlip(p=0.5),
+            A.ColorJitter(p=0.25),
             A.RandomBrightnessContrast(p=0.2),
             ToTensorV2(),
         ])
@@ -38,16 +41,19 @@ def main(run_name):
         print('Data augmentation is disabled')
         train_transforms = A.Compose([
             A.Resize(config['resize'], config['resize']),
+            A.CenterCrop(config['crop'], config['crop']),
             A.Normalize(),
             ToTensorV2(),
         ])
         
     val_transforms = A.Compose([
             A.Resize(config['resize'], config['resize']),
+            A.CenterCrop(config['crop'], config['crop']),
             ToTensorV2(),
         ])
     test_transforms = A.Compose([
             A.Resize(config['resize'], config['resize']),
+            A.CenterCrop(config['crop'], config['crop']),
             ToTensorV2(),
         ])
 
@@ -65,7 +71,7 @@ def main(run_name):
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=config['init_lr'])
     scheduler = None
-    # scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=3, verbose=True)
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.3, patience=3, min_lr=1e-8, verbose=True)
 
 
     save_dir = os.path.join(config['save_dir'], run_name)

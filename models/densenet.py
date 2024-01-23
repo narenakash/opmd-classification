@@ -15,9 +15,25 @@ class DenseNet201(nn.Module):
         # for param in self.model.parameters():
         #     param.requires_grad = False
 
-        num_neurons = self.model.classifier.in_features
-        self.model.classifier = nn.Linear(num_neurons, num_classes)
+        # num_neurons = self.model.classifier.in_features
+        # self.model.classifier = nn.Linear(num_neurons, num_classes)
+
+        # from the source code of the MDPI paper
+        self.model.classifier = nn.Sequential(
+            # nn.AvgPool2d((1,1)),
+            # nn.Flatten(),
+            nn.Linear(1920, 512),
+            nn.ReLU(),
+            nn.Linear(512, num_classes)
+        )
 
     def forward(self, x):
         x = self.model(x)
         return x
+    
+
+# print the model
+if __name__ == '__main__':
+    model = DenseNet201()
+    print(model)
+    print('Number of trainable parameters:', sum(p.numel() for p in model.parameters() if p.requires_grad))

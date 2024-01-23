@@ -13,7 +13,7 @@ n_epochs: 50
 batch_size: 32
 num_workers: 24
 
-data_aug: 0
+data_aug: 1
 
 # saving checkpoints
 save_dir: '/ssd_scratch/cvit/chocolite/OPMD-Classification/weights/'
@@ -22,7 +22,8 @@ save_freq: 1
 fold: 'x'
 num_classes: 1
 
-resize: 224
+resize: 256
+crop: 224
 
 # model details
 model: 
