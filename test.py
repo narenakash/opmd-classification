@@ -8,11 +8,14 @@ from tqdm import tqdm
 from monai.transforms import Activations, AsDiscrete
 from sklearn.metrics import classification_report, confusion_matrix
 
+from utils import calculate_metrics
+
+
 def test(model, dataloader, criterion, device):
     model.eval()
 
     epoch_loss = 0
-    epoch_acc = []
+    # epoch_acc = []
 
     labels_list = []
     outputs_list = []
@@ -27,13 +30,13 @@ def test(model, dataloader, criterion, device):
             loss = criterion(outputs, labels)
 
             outputs = Activations(sigmoid=True)(outputs)
-            outputs = AsDiscrete(threshold_values=True)(outputs)
+            outputs = AsDiscrete(threshold=0.5)(outputs)
             outputs = outputs.squeeze()
-            acc = (outputs == labels).float().tolist()
 
             epoch_loss += loss.item()
 
-            epoch_acc.extend(acc)
+            # acc = (outputs == labels).float().tolist()
+            # epoch_acc.extend(acc)
 
             labels_list.extend(labels.tolist())
             outputs_list.extend(outputs.tolist())
@@ -46,7 +49,12 @@ def test(model, dataloader, criterion, device):
 
         epoch_loss /= len(dataloader)
 
-        epoch_acc = sum(epoch_acc)
-        epoch_acc /= len(dataloader.dataset)
+        # epoch_acc = sum(epoch_acc)
+        # epoch_acc /= len(dataloader.dataset)
 
-    return epoch_loss, epoch_acc
+        precision, recall, sensitivity, specificity, f1, accuracy = calculate_metrics(labels_list, outputs_list)
+
+        print('Test metrics:')
+        print(f'Precision: {precision:.4f}, Recall: {recall:.4f}, Sensitivity: {sensitivity:.4f}, Specificity: {specificity:.4f}, F1: {f1:.4f}, Accuracy: {accuracy:.4f}\n')
+
+    return epoch_loss, precision, recall, sensitivity, specificity, f1, accuracy

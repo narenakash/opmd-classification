@@ -17,23 +17,46 @@ def train(model, train_dataloader, val_dataloader, test_dataloader, criterion, o
 
     for epoch in range(n_epochs):
 
-        train_loss, train_acc = train_epoch(model, train_dataloader, criterion, optimizer, scheduler, device)
+        train_loss, train_precision, train_recall, train_sensitivity, train_specificity, train_f1, train_accuracy = train_epoch(model, train_dataloader, criterion, optimizer, scheduler, device)
 
-        val_loss, val_acc = eval_epoch(model, val_dataloader, criterion, device)
+        val_loss, val_precision, val_recall, val_sensitivity, val_specificity, val_f1, val_accuracy = eval_epoch(model, val_dataloader, criterion, device)
 
-        if val_acc > best_val_acc:
-            best_val_acc = val_acc
+        if val_accuracy > best_val_acc:
+            best_val_acc = val_accuracy
             best_val_acc_epoch = epoch + 1   
 
             save_checkpoint(model, optimizer, save_dir, epoch + 1)
             print("Saved checkpoint at epoch {} to {}".format(epoch + 1, save_dir))
 
-        print("Current epoch: {} | Train loss: {:.4f} | Train acc: {:.4f} | Val loss: {:.4f} | Val acc: {:.4f} | Best val acc: {:.4f} at epoch {}".format(epoch + 1, train_loss, train_acc, val_loss, val_acc, best_val_acc, best_val_acc_epoch))
+        print("\nEpoch: {} | Train loss: {:.4f} | Train precision: {:.4f} | Train recall: {:.4f} | Train sensitivity: {:.4f} | Train specificity: {:.4f} | Train f1: {:.4f} | Train acc: {:.4f}\nVal loss: {:.4f} | Val precision: {:.4f} | Val recall: {:.4f} | Val sensitivity: {:.4f} | Val specificity: {:.4f} | Val f1: {:.4f} | Val acc: {:.4f}".format(epoch + 1, train_loss, train_precision, train_recall, train_sensitivity, train_specificity, train_f1, train_accuracy, val_loss, val_precision, val_recall, val_sensitivity, val_specificity, val_f1, val_accuracy))
 
-        test_loss, test_acc = test(model, test_dataloader, criterion, device)
-        print("Test loss: {:.4f} | Test acc: {:.4f}".format(test_loss, test_acc))
+        test_loss,  test_precision, test_recall, test_sensitivity, test_specificity, test_f1, test_accuracy = test(model, test_dataloader, criterion, device)
+        print("Test loss: {:.4f} | Test precision: {:.4f} | Test recall: {:.4f} | Test sensitivity: {:.4f} | Test specificity: {:.4f} | Test f1: {:.4f} | Test acc: {:.4f}".format(test_loss, test_precision, test_recall, test_sensitivity, test_specificity, test_f1, test_accuracy))
 
-        wandb.log({"train_loss": train_loss, "train_acc": train_acc, "val_loss": val_loss, "val_acc": val_acc, "test_loss": test_loss, "test_acc": test_acc, "epoch": epoch + 1, "best_val_acc": best_val_acc, "best_val_acc_epoch": best_val_acc_epoch})
+        wandb.log({
+            "train_loss": train_loss,
+            "train_precision": train_precision,
+            "train_recall": train_recall,
+            "train_sensitivity": train_sensitivity,
+            "train_specificity": train_specificity,
+            "train_f1": train_f1,
+            "train_accuracy": train_accuracy,
+            "val_loss": val_loss,
+            "val_precision": val_precision,
+            "val_recall": val_recall,
+            "val_sensitivity": val_sensitivity,
+            "val_specificity": val_specificity,
+            "val_f1": val_f1,
+            "val_accuracy": val_accuracy,
+            "test_loss": test_loss,
+            "test_acc": test_accuracy,
+            "test_precision": test_precision,
+            "test_recall": test_recall,
+            "test_sensitivity": test_sensitivity,
+            "test_specificity": test_specificity,
+            "test_f1": test_f1,
+            "test_accuracy": test_accuracy,
+        })
 
     # load the best checkpoint
     model, optimizer, start_epoch = load_checkpoint(model, optimizer, os.path.join(save_dir, "model_{}.pth".format(best_val_acc_epoch)), device)
@@ -47,7 +70,10 @@ def train_epoch(model, dataloader, criterion, optimizer, scheduler, device):
     model.train()
 
     epoch_loss = 0
-    epoch_acc = []
+    # epoch_acc = []
+
+    labels_list = []
+    outputs_list = []
 
     for batch in tqdm(dataloader, total=len(dataloader)):
         images = batch['image'].to(device)
@@ -65,20 +91,26 @@ def train_epoch(model, dataloader, criterion, optimizer, scheduler, device):
         epoch_loss += loss.item()
 
         outputs = Activations(sigmoid=True)(outputs)
-        outputs = AsDiscrete(threshold_values=True)(outputs)
+        outputs = AsDiscrete(threshold=0.5)(outputs)
         outputs = outputs.squeeze()
-        acc = (outputs == labels).float().tolist()
+        
+        # acc = (outputs == labels).float().tolist()
+        # epoch_acc.extend(acc)
 
-        epoch_acc.extend(acc)
+        if scheduler is not None:
+            scheduler.step()
+
+        labels_list.extend(labels.tolist())
+        outputs_list.extend(outputs.tolist())
 
     epoch_loss /= len(dataloader)
 
-    epoch_acc = sum(epoch_acc)
-    epoch_acc /= len(dataloader.dataset)
+    # epoch_acc = sum(epoch_acc)
+    # epoch_acc /= len(dataloader.dataset)
 
-    # scheduler.step(epoch_loss)
+    precision, recall, sensitivity, specificity, f1, accuracy = calculate_metrics(labels_list, outputs_list)
 
-    return epoch_loss, epoch_acc
+    return epoch_loss, precision, recall, sensitivity, specificity, f1, accuracy
 
 
 def eval_epoch(model, dataloader, criterion, device):
@@ -86,7 +118,10 @@ def eval_epoch(model, dataloader, criterion, device):
     model.eval()
 
     epoch_loss = 0
-    epoch_acc = []
+    # epoch_acc = []
+
+    labels_list = []
+    outputs_list = []
 
     with torch.no_grad():
         for batch in tqdm(dataloader, total=len(dataloader)):
@@ -100,17 +135,20 @@ def eval_epoch(model, dataloader, criterion, device):
             epoch_loss += loss.item()
 
             outputs = Activations(sigmoid=True)(outputs)
-            outputs = AsDiscrete(threshold_values=True)(outputs)
+            outputs = AsDiscrete(threshold=0.5)(outputs)
             outputs = outputs.squeeze()
 
-            acc = (outputs == labels).float().tolist()
+            # acc = (outputs == labels).float().tolist()
+            # epoch_acc.extend(acc)
 
-            epoch_acc.extend(acc)
-
+            labels_list.extend(labels.tolist())
+            outputs_list.extend(outputs.tolist())
 
     epoch_loss /= len(dataloader)
 
-    epoch_acc = sum(epoch_acc)
-    epoch_acc /= len(dataloader.dataset)
+    # epoch_acc = sum(epoch_acc)
+    # epoch_acc /= len(dataloader.dataset)
+    precision, recall, sensitivity, specificity, f1, accuracy = calculate_metrics(labels_list, outputs_list)
 
-    return epoch_loss, epoch_acc
+
+    return epoch_loss, precision, recall, sensitivity, specificity, f1, accuracy
