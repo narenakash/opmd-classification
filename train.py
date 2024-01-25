@@ -70,7 +70,6 @@ def train_epoch(model, dataloader, criterion, optimizer, scheduler, device):
     model.train()
 
     epoch_loss = 0
-    # epoch_acc = []
 
     labels_list = []
     outputs_list = []
@@ -93,9 +92,6 @@ def train_epoch(model, dataloader, criterion, optimizer, scheduler, device):
         outputs = Activations(sigmoid=True)(outputs)
         outputs = AsDiscrete(threshold=0.5)(outputs)
         outputs = outputs.squeeze()
-        
-        # acc = (outputs == labels).float().tolist()
-        # epoch_acc.extend(acc)
 
         if scheduler is not None:
             scheduler.step()
@@ -104,9 +100,6 @@ def train_epoch(model, dataloader, criterion, optimizer, scheduler, device):
         outputs_list.extend(outputs.tolist())
 
     epoch_loss /= len(dataloader)
-
-    # epoch_acc = sum(epoch_acc)
-    # epoch_acc /= len(dataloader.dataset)
 
     precision, recall, sensitivity, specificity, f1, accuracy = calculate_metrics(labels_list, outputs_list)
 
@@ -118,7 +111,6 @@ def eval_epoch(model, dataloader, criterion, device):
     model.eval()
 
     epoch_loss = 0
-    # epoch_acc = []
 
     labels_list = []
     outputs_list = []
@@ -138,16 +130,11 @@ def eval_epoch(model, dataloader, criterion, device):
             outputs = AsDiscrete(threshold=0.5)(outputs)
             outputs = outputs.squeeze()
 
-            # acc = (outputs == labels).float().tolist()
-            # epoch_acc.extend(acc)
-
             labels_list.extend(labels.tolist())
             outputs_list.extend(outputs.tolist())
 
     epoch_loss /= len(dataloader)
 
-    # epoch_acc = sum(epoch_acc)
-    # epoch_acc /= len(dataloader.dataset)
     precision, recall, sensitivity, specificity, f1, accuracy = calculate_metrics(labels_list, outputs_list)
 
 

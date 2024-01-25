@@ -1,8 +1,6 @@
 import torch
 import numpy as np
 
-import time
-import wandb
 from tqdm import tqdm
 
 from monai.transforms import Activations, AsDiscrete
@@ -15,7 +13,6 @@ def test(model, dataloader, criterion, device):
     model.eval()
 
     epoch_loss = 0
-    # epoch_acc = []
 
     labels_list = []
     outputs_list = []
@@ -35,9 +32,6 @@ def test(model, dataloader, criterion, device):
 
             epoch_loss += loss.item()
 
-            # acc = (outputs == labels).float().tolist()
-            # epoch_acc.extend(acc)
-
             labels_list.extend(labels.tolist())
             outputs_list.extend(outputs.tolist())
 
@@ -48,9 +42,6 @@ def test(model, dataloader, criterion, device):
         print(confusion_matrix(np.asarray(labels_list), np.asarray(outputs_list)))
 
         epoch_loss /= len(dataloader)
-
-        # epoch_acc = sum(epoch_acc)
-        # epoch_acc /= len(dataloader.dataset)
 
         precision, recall, sensitivity, specificity, f1, accuracy = calculate_metrics(labels_list, outputs_list)
 
