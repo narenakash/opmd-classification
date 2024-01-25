@@ -70,7 +70,6 @@ def main(run_name):
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=config['init_lr'])
-    scheduler = None
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.3, patience=3, min_lr=1e-8, verbose=True)
 
 
@@ -92,7 +91,7 @@ if __name__ == '__main__':
         config=config,
         entity="chocolite",
         name=run_name,
-        mode="disabled"    
+        # mode="disabled"    
     )
 
     wandb.config.update(config)

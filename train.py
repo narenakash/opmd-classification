@@ -17,7 +17,7 @@ def train(model, train_dataloader, val_dataloader, test_dataloader, criterion, o
 
     for epoch in range(n_epochs):
 
-        train_loss, train_precision, train_recall, train_sensitivity, train_specificity, train_f1, train_accuracy = train_epoch(model, train_dataloader, criterion, optimizer, scheduler, device)
+        train_loss, train_precision, train_recall, train_sensitivity, train_specificity, train_f1, train_accuracy = train_epoch(model, train_dataloader, criterion, optimizer, device)
 
         val_loss, val_precision, val_recall, val_sensitivity, val_specificity, val_f1, val_accuracy = eval_epoch(model, val_dataloader, criterion, device)
 
@@ -29,6 +29,9 @@ def train(model, train_dataloader, val_dataloader, test_dataloader, criterion, o
             print("Saved checkpoint at epoch {} to {}".format(epoch + 1, save_dir))
 
         print("\nEpoch: {} | Train loss: {:.4f} | Train precision: {:.4f} | Train recall: {:.4f} | Train sensitivity: {:.4f} | Train specificity: {:.4f} | Train f1: {:.4f} | Train acc: {:.4f}\nVal loss: {:.4f} | Val precision: {:.4f} | Val recall: {:.4f} | Val sensitivity: {:.4f} | Val specificity: {:.4f} | Val f1: {:.4f} | Val acc: {:.4f}".format(epoch + 1, train_loss, train_precision, train_recall, train_sensitivity, train_specificity, train_f1, train_accuracy, val_loss, val_precision, val_recall, val_sensitivity, val_specificity, val_f1, val_accuracy))
+
+        if scheduler is not None:
+            scheduler.step(val_loss)
 
         test_loss,  test_precision, test_recall, test_sensitivity, test_specificity, test_f1, test_accuracy = test(model, test_dataloader, criterion, device)
         print("Test loss: {:.4f} | Test precision: {:.4f} | Test recall: {:.4f} | Test sensitivity: {:.4f} | Test specificity: {:.4f} | Test f1: {:.4f} | Test acc: {:.4f}".format(test_loss, test_precision, test_recall, test_sensitivity, test_specificity, test_f1, test_accuracy))
@@ -65,7 +68,7 @@ def train(model, train_dataloader, val_dataloader, test_dataloader, criterion, o
     test(model, test_dataloader, criterion, device)
 
 
-def train_epoch(model, dataloader, criterion, optimizer, scheduler, device):
+def train_epoch(model, dataloader, criterion, optimizer, device):
     
     model.train()
 
@@ -92,9 +95,6 @@ def train_epoch(model, dataloader, criterion, optimizer, scheduler, device):
         outputs = Activations(sigmoid=True)(outputs)
         outputs = AsDiscrete(threshold=0.5)(outputs)
         outputs = outputs.squeeze()
-
-        if scheduler is not None:
-            scheduler.step()
 
         labels_list.extend(labels.tolist())
         outputs_list.extend(outputs.tolist())
