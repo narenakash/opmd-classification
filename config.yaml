@@ -1,9 +1,9 @@
 project_name: 'opmd-binary-classification'
 
 # dataset details
-train_dir: '/ssd_scratch/cvit/chocolite/OPMD-Classification/train/'
-val_dir: '/ssd_scratch/cvit/chocolite/OPMD-Classification/val/'
-test_dir: '/ssd_scratch/cvit/chocolite/OPMD-Classification/test/'
+train_dir: '/ssd_scratch/cvit/chocolite/OPMD-SegClassification-F1-N3/train/'
+val_dir: '/ssd_scratch/cvit/chocolite/OPMD-SegClassification-F1-N3/val/'
+test_dir: '/ssd_scratch/cvit/chocolite/OPMD-SegClassification-F1-N3/test/'
 
 seed: 42
 
@@ -19,7 +19,7 @@ data_aug: 1
 save_dir: '/ssd_scratch/cvit/chocolite/OPMD-Classification/weights/'
 save_freq: 1
 
-fold: 'x'
+fold: 'NA'
 num_classes: 1
 
 resize: 256
