@@ -1,9 +1,15 @@
 project_name: 'opmd-binary-classification'
 
 # dataset details
-train_dir: '/ssd_scratch/cvit/chocolite/OPMD-SegClassification-F1-N3/train/'
-val_dir: '/ssd_scratch/cvit/chocolite/OPMD-SegClassification-F1-N3/val/'
-test_dir: '/ssd_scratch/cvit/chocolite/OPMD-SegClassification-F1-N3/test/'
+dataset:
+  train_csv_path: 'data/opmd_train_foldx.csv'
+  train_dir: '/ssd_scratch/cvit/chocolite/OPMD-GraceSet/images/'
+
+  val_csv_path: 'data/opmd_val_foldx.csv'
+  val_dir: '/ssd_scratch/cvit/chocolite/OPMD-GraceSet/images/'
+
+  test_csv_path: 'data/opmd_test_foldx.csv'
+  test_dir: '/ssd_scratch/cvit/chocolite/OPMD-GraceSet/images/'
 
 seed: 42
 
@@ -16,10 +22,10 @@ num_workers: 24
 data_aug: 1
 
 # saving checkpoints
-save_dir: '/ssd_scratch/cvit/chocolite/OPMD-Classification/weights/'
+save_dir: '/ssd_scratch/cvit/chocolite/OPMD-GraceClassification/weights/'
 save_freq: 1
 
-fold: 'NA'
+fold: 1
 num_classes: 1
 
 resize: 256

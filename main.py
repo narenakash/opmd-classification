@@ -11,7 +11,7 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
 from models.densenet import DenseNet201
-from dataset import OPMDClassificationDataset
+from dataset2 import OPMDClassificationDataset
 from utils import get_config, set_seed
 
 from train import train
@@ -57,9 +57,12 @@ def main(run_name):
             ToTensorV2(),
         ])
 
-    train_dataset = OPMDClassificationDataset(config['train_dir'], transform=train_transforms)
-    val_dataset = OPMDClassificationDataset(config['val_dir'], transform=val_transforms)
-    test_dataset = OPMDClassificationDataset(config['test_dir'], transform=test_transforms)
+    train_dataset = OPMDClassificationDataset(csv_file=config["dataset"]["train_csv_path"].replace("x", str(config["fold"])), 
+                                            root_dir=config["dataset"]["train_dir"], transform=train_transforms)
+    val_dataset = OPMDClassificationDataset(csv_file=config["dataset"]["val_csv_path"].replace("x", str(config["fold"])), 
+                                            root_dir=config["dataset"]["val_dir"], transform=val_transforms)
+    test_dataset = OPMDClassificationDataset(csv_file=config["dataset"]["test_csv_path"].replace("x", str(config["fold"])), 
+                                            root_dir=config["dataset"]["test_dir"], transform=test_transforms)
 
     train_dataloader = DataLoader(train_dataset, batch_size=config['batch_size'], shuffle=True, num_workers=config['num_workers'])
     val_dataloader = DataLoader(val_dataset, batch_size=config['batch_size'], shuffle=False, num_workers=config['num_workers'])
