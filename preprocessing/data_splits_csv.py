@@ -23,8 +23,8 @@ for subset in subsets:
         # drop the first column
         df = df.drop(df.columns[0], axis=1)
 
-        # change the img_name column entries extension from .jpg to .png
-        df["img_name"] = df["img_name"].apply(lambda x: x.replace(".jpg", ".png"))
+        # change the img_name column entries extension from .jpg and .jpeg to .png
+        df["img_name"] = df["img_name"].apply(lambda x: x.replace(".jpg", ".png").replace(".jpeg", ".png"))
 
         # save the modified dataframe in the current directory
         df.to_csv(f"../data/opmd_{subset}_{fold}.csv", index=False)
