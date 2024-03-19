@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
-from models.densenet import DenseNet201
+from models.densenet import DenseNet201, DenseNet201ModifiedInput
 from dataset2 import OPMDClassificationDataset
 from utils import get_config, set_seed
 
@@ -57,18 +57,43 @@ def main(run_name):
             ToTensorV2(),
         ])
 
+    if config['setting'] == 1:
+        train_dir = config['dataset']['train_dir'] + "OPMD-GraceSet/images/"
+        val_dir = config['dataset']['val_dir'] + "OPMD-GraceSet/images/"
+        test_dir = config['dataset']['test_dir'] + "OPMD-GraceSet/images/"
+    elif config['setting'] == 2:
+        train_dir = config['dataset']['train_dir'] + "OPMD-GraceSet/images/"
+        val_dir = config['dataset']['val_dir'] + "OPMD-GraceSet/images/"
+        test_dir = config['dataset']['test_dir'] + f"OPMD-GraceSegClassification-F{config['fold']}-N{config['seg_type']}/images/"
+    elif config['setting'] == 3:
+        train_dir = config['dataset']['train_dir'] + "OPMD-GraceSet/masked_images/"
+        val_dir = config['dataset']['val_dir'] + "OPMD-GraceSet/masked_images/"
+        test_dir = config['dataset']['test_dir'] + f"OPMD-GraceSegClassification-F{config['fold']}-N{config['seg_type']}/images/"
+    elif config['setting'] == 4:
+        img_dir = config['dataset']['train_dir'] + "OPMD-GraceSet/images/"
+        train_dir = config['dataset']['train_dir'] + "OPMD-GraceSet/masked_images/"
+        val_dir = config['dataset']['val_dir'] + "OPMD-GraceSet/masked_images/"
+        test_dir = config['dataset']['test_dir'] + f"OPMD-GraceSegClassification-F{config['fold']}-N{config['seg_type']}/images/"
+
+
     train_dataset = OPMDClassificationDataset(csv_file=config["dataset"]["train_csv_path"].replace("x", str(config["fold"])), 
-                                            root_dir=config["dataset"]["train_dir"], transform=train_transforms)
+                                            root_dir=train_dir, transform=train_transforms, img_dir=img_dir if config['setting'] == 4 else None)
     val_dataset = OPMDClassificationDataset(csv_file=config["dataset"]["val_csv_path"].replace("x", str(config["fold"])), 
-                                            root_dir=config["dataset"]["val_dir"], transform=val_transforms)
+                                            root_dir=val_dir, transform=val_transforms, img_dir=img_dir if config['setting'] == 4 else None)
     test_dataset = OPMDClassificationDataset(csv_file=config["dataset"]["test_csv_path"].replace("x", str(config["fold"])), 
-                                            root_dir=config["dataset"]["test_dir"], transform=test_transforms)
+                                            root_dir=test_dir, transform=test_transforms, img_dir=img_dir if config['setting'] == 4 else None)
 
     train_dataloader = DataLoader(train_dataset, batch_size=config['batch_size'], shuffle=True, num_workers=config['num_workers'])
     val_dataloader = DataLoader(val_dataset, batch_size=config['batch_size'], shuffle=False, num_workers=config['num_workers'])
     test_dataloader = DataLoader(test_dataset, batch_size=config['batch_size'], shuffle=False, num_workers=config['num_workers'])
 
-    model = DenseNet201(num_classes=config['num_classes']).to(device)
+   
+
+    if config['model']['n_channels'] == 3:
+         model = DenseNet201(num_classes=config['num_classes'], quantize=config['quantize']).to(device)
+    else:
+        model = DenseNet201ModifiedInput(num_classes=config['num_classes'], in_channels=config['model']['n_channels']).to(device)
+
     model = nn.DataParallel(model)
 
     criterion = nn.CrossEntropyLoss()
@@ -78,7 +103,7 @@ def main(run_name):
 
     save_dir = os.path.join(config['save_dir'], run_name)
 
-    train(model, train_dataloader, val_dataloader, test_dataloader, criterion, optimizer, scheduler, device, save_dir, n_epochs=config['n_epochs'], save_freq=1, n_gpus=4)
+    train(model, train_dataloader, val_dataloader, test_dataloader, criterion, optimizer, scheduler, device, save_dir, n_epochs=config['n_epochs'], save_freq=1, n_gpus=4, quantize=config['quantize'])
 
 
 

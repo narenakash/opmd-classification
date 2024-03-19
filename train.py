@@ -10,7 +10,7 @@ from test import test
 from utils import save_checkpoint, load_checkpoint, calculate_metrics
 
 
-def train(model, train_dataloader, val_dataloader, test_dataloader, criterion, optimizer, scheduler, device, save_dir, n_epochs=10, save_freq=1, n_gpus=4):
+def train(model, train_dataloader, val_dataloader, test_dataloader, criterion, optimizer, scheduler, device, save_dir, n_epochs=10, save_freq=1, n_gpus=4, quantize=False):
 
     best_val_acc = -1
     best_val_acc_epoch = -1
@@ -65,7 +65,7 @@ def train(model, train_dataloader, val_dataloader, test_dataloader, criterion, o
     model, optimizer, start_epoch = load_checkpoint(model, optimizer, os.path.join(save_dir, "model_{}.pth".format(best_val_acc_epoch)), device)
     print("Loaded checkpoint from epoch {} with best val acc {:.4f}".format(start_epoch, best_val_acc))
 
-    test(model, test_dataloader, criterion, device)
+    test(model, test_dataloader, criterion, device, quantize=quantize)
 
 
 def train_epoch(model, dataloader, criterion, optimizer, device):

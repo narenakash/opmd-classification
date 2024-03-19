@@ -3,13 +3,13 @@ project_name: 'opmd-binary-classification'
 # dataset details
 dataset:
   train_csv_path: 'data/opmd_train_foldx.csv'
-  train_dir: '/ssd_scratch/cvit/chocolite/OPMD-GraceSet/images/'
+  train_dir: '/ssd_scratch/cvit/chocolite/'
 
   val_csv_path: 'data/opmd_val_foldx.csv'
-  val_dir: '/ssd_scratch/cvit/chocolite/OPMD-GraceSet/images/'
+  val_dir: '/ssd_scratch/cvit/chocolite/'
 
   test_csv_path: 'data/opmd_test_foldx.csv'
-  test_dir: '/ssd_scratch/cvit/chocolite/OPMD-GraceSet/images/'
+  test_dir: '/ssd_scratch/cvit/chocolite/'
 
 seed: 42
 
@@ -18,6 +18,11 @@ init_lr: 0.0001
 n_epochs: 50
 batch_size: 32
 num_workers: 24
+
+# 1: tr: img, te: img; 2: tr: img, te: segimg; 3: tr: segimg, te: segimg
+setting: 1
+# 1: segmentation on grayscale; 3: segmentation on RGB
+seg_type: 3
 
 data_aug: 1
 
@@ -36,3 +41,4 @@ model:
   name: 'densenet201'
   n_channels: 3
 
+quantize: True

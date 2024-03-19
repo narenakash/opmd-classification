@@ -9,7 +9,7 @@ from sklearn.metrics import classification_report, confusion_matrix
 from utils import calculate_metrics
 
 
-def test(model, dataloader, criterion, device):
+def test(model, dataloader, criterion, device, quantize=False):
     model.eval()
 
     epoch_loss = 0
